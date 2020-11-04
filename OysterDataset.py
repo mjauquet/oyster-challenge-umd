@@ -44,4 +44,4 @@ class OysterDataset(Dataset):
         # Get class for image row[index], col[4]
         target = os.path.join(self.root_dir, self.oysters.iloc[index, 4])
         
-        return image, target
+        return img, target
