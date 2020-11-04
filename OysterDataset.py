@@ -5,6 +5,7 @@ from torchvision import transforms, utils
 import pandas as pd
 from skimage import io, transform
 from PIL import Image
+import numpy as np
 
 class OysterDataset(Dataset):
     ''' Dataset for crops of oyster images '''
@@ -37,11 +38,13 @@ class OysterDataset(Dataset):
 
         # following PedFundanDataset
         img = Image.open(img_name).convert("RGB")
+        
+        img = np.array(img)
 
         if self.transform is not None:
             img = self.transform(img)
 
         # Get class for image row[index], col[4]
-        target = os.path.join(self.root_dir, self.oysters.iloc[index, 4])
+        target = self.oysters.iloc[index, 4]
         
         return img, target
