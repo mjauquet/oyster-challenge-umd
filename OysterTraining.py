@@ -22,11 +22,11 @@ net = Net()
 net.load_state_dict(torch.load(PATH))
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9)
+optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.8)
 
 # Training the network
 # loop over the data iterator and feed the inputs to the network and optimize
-for epoch in range(4):  # loop over the dataset multiple times
+for epoch in range(200):  # loop over the dataset multiple times
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
@@ -44,7 +44,7 @@ for epoch in range(4):  # loop over the dataset multiple times
         # print statistics
         running_loss += loss.item()
         if i % 2 == 1:    # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
+            print('[%d, %5d] loss: %.6f' %
                   (epoch + 1, i + 1, running_loss / 2))
             running_loss = 0.0
 
