@@ -7,7 +7,7 @@ from skimage import io, transform
 from PIL import Image
 import numpy as np
 
-class OysterDataset(Dataset):
+class OysterClassifierDataset(Dataset):
     ''' Dataset for crops of oyster images '''
 
     def __init__(self, root_dir, csv_file, transform=None):
@@ -38,7 +38,6 @@ class OysterDataset(Dataset):
 
         # following PedFundanDataset
         img = Image.open(img_name).convert("RGB")
-        
         img = np.array(img)
 
         if self.transform is not None:
@@ -46,5 +45,5 @@ class OysterDataset(Dataset):
 
         # Get class for image row[index], col[4]
         target = self.oysters.iloc[index, 4]
-        
+
         return img, target
