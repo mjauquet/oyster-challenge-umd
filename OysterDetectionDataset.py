@@ -41,7 +41,6 @@ class OysterDetectionDataset(Dataset):
         print("There are ", num_objs, "objects in ", img_name)
         labels = []
         boxes = []
-        area = 0
 
         if num_objs == 0:
             boxes.append([0,0,0,0])
@@ -55,12 +54,10 @@ class OysterDetectionDataset(Dataset):
                 boxes.append([xmin, ymin, xmax, ymax])
 
                 obj_class = self.oysters.iloc[index, pos]   # get class of object 0,1, or 2
-                labels.append([obj_class])
+                labels.append(obj_class)
 
-                print("Boxes: ", boxes[i], "\nClass: ", labels[i])
+                print("Box: ", boxes[i], "\nClass: ", labels[i])
 
-            
- 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         print(boxes)
         
@@ -68,7 +65,6 @@ class OysterDetectionDataset(Dataset):
         print(labels)                
 
         img_id = self.oysters.iloc[index, 0]    # name of image
-        
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]) # area of image
         print(area)
 
