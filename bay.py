@@ -17,7 +17,7 @@ from PIL import Image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+#from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
 from engine import train_one_epoch, evaluate
 import utils
@@ -87,7 +87,7 @@ class OysterDataset(Dataset):
 
         # Getting Labels
         num_objs = self.oysters.iloc[index, 4]
-        print("There are ", num_objs, "objects in ", img_name)
+  #      print("There are ", num_objs, "objects in ", img_name)
         
         labels = []
         boxes = []
@@ -114,11 +114,14 @@ class OysterDataset(Dataset):
         img_id = torch.tensor([index])    # name of image
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]) # area of image
 
+        iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
+        
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels
-        target["imgage_id"] = img_id
+        target["image_id"] = img_id
         target["area"] = area
+        target["iscrowd"] = iscrowd
 
         if self.transforms is not None:
             img = self.transforms(img)
@@ -130,17 +133,17 @@ class OysterDataset(Dataset):
 
 
 def get_model_instance_segmentation(num_classes):
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained = True)
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained = True)
 
     in_features = model.roi_heads.box_predictor.cls_score.in_features
 
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-    in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
+    #in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
     hidden_layer = 256
 
-    model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer,
-                                                        num_classes)
+    #model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer,
+                                                    #    num_classes)
 
     return model
 
@@ -156,34 +159,6 @@ def get_transform(train):
 
 
 def main(): 
-
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,
-                                                                 pretrained_backbone = False)
-    dataset = OysterDataset("/Users/darwin/Downloads/Bay project/Training",
-                          "/Users/darwin/Downloads/Bay project/Training/TrainingDetectionLabels3.csv",
-                          get_transform(train = True))
-    
-    data_loader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4,
-                                collate_fn=utils.collate_fn)
-
-# For Training
-    images,targets = next(iter(data_loader))
-
-    print(images)
-    
-    images = list(image for image in images)
-    targets = [{k: v for k, v in t.items()} for t in targets]
-    
-    output = model(images,targets)   # Returns losses and detections
-    
-# For inference
-    model.eval()
-    x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
-    predictions = model(x)
-
-    print(predictions)
-
-
 
 
 
@@ -211,7 +186,7 @@ def main():
   
   
   # Train classifier
-    device = torch.device('cpu')
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     dataset = OysterDataset("/Users/darwin/Downloads/Bay project/Training",
                           "/Users/darwin/Downloads/Bay project/Training/TrainingDetectionLabels3.csv",
@@ -225,10 +200,10 @@ def main():
     dataset = torch.utils.data.Subset(dataset, indices[:-50])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-50:])
 
-    data_loader = torch.utils.data.DataLoader(dataset, batch_size=3, shuffle = False, num_workers=4,
+    data_loader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle = False, num_workers=4,
                                             collate_fn = utils.collate_fn)
 
-    data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=3, shuffle = False, num_workers=4,
+    data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=2, shuffle = False, num_workers=4,
                                                   collate_fn=utils.collate_fn)
 
     model = get_model_instance_segmentation(num_classes)
@@ -243,10 +218,12 @@ def main():
 
     num_epochs = 1
 
-    for epoch in range(num_epochs): 
+    for epoch in range(num_epochs):
+        print(epoch)
+        
         train_one_epoch(model, optimizer, data_loader_test, device, epoch, print_freq=10)
 
-        print(epoch);
+        print("\nthis worked\n")
 
         lr_scheduler.step()
 
