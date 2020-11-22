@@ -45,6 +45,7 @@ def runModel(filepath):
     # get model 
     num_classes = 4
     model = get_model(num_classes)
+    model.to(device)
     model.eval()
 
     # Run model
