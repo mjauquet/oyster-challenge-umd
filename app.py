@@ -18,7 +18,6 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from PIL import Image
 
-
 # Main function
 def main(self):
     num_args = len(sys.argv)
