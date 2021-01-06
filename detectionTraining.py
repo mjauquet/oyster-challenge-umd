@@ -105,3 +105,35 @@ for epoch in range(num_epochs):
 
 PATH = '/content/drive/MyDrive/BayChallenge/detection_net.pth'
 torch.save(model.state_dict(), PATH)
+
+# Test model output
+# pick one image from the test set
+img, label = dataset_test[5]
+print(label["image_id"])
+# put the model in evaluation mode
+model.eval()
+with torch.no_grad():
+  prediction = model([img.to(device)])
+  print(prediction)
+
+print(prediction[0]['labels'])
+
+# Loop through prediction's labels of each object to count alive/dead
+num_live = (prediction[0]['labels'] == 1).sum(dim=0).item()
+num_dead = (prediction[0]['labels'] == 2).sum(dim=0).item()
+
+# Loop through prediction's labels of each object to count alive/dead
+act_num_live = (label['labels'] == 1).sum(dim=0).item()
+act_num_dead = (label['labels'] == 2).sum(dim=0).item()
+    
+# Print output
+act_total_oysters = act_num_live + act_num_dead
+actual = [act_total_oysters, act_num_live, act_num_dead]
+print("Actual: ", actual)
+
+total_oysters = num_live + num_dead
+output = [total_oysters, num_live, num_dead]
+print("Predicted: ", output)
+
+# original image
+Image.fromarray(img.mul(255).permute(1, 2, 0).byte().numpy())
